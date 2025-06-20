@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RoomTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <h1>RoomTrack</h1>
+  </nav>
+
+  <main class="form-container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <label for="username">Username:</label>
+      <input type="text" id="username" required />
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required />
+
+      <button type="submit">Login</button>
+    </form>
+
+    <p><a href="#" onclick="forgotPassword()">Forgot Password?</a></p>
+    <p><a href="#" onclick="showRegister()">Register as New Landlord</a></p>
+    <p><a href="index.html">Home</a></p>
+  </main>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  // Example: Hardcoded check — replace with real logic if needed
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  if (username === 'admin' && password === 'admin123') {
+    localStorage.setItem('isLoggedIn', 'true');  // ✅ Flag as logged in
+    window.location.href = 'index.html';         // ✅ Redirect to homepage
+  } else {
+    alert('Invalid credentials');
+  }
+});
+
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>

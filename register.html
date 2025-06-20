@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Tenant - RoomTrack</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script>
+    // ✅ Redirect if not logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (!isLoggedIn || isLoggedIn !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <nav class="navbar">
+    <h1>RoomTrack - Register Tenant</h1>
+    <div class="navbar-buttons">
+      <button onclick="location.href='index.html'">Home</button>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <main class="form-container">
+    <h2>Add New Tenant</h2>
+    <form id="tenant-form">
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" required>
+
+      <label for="idNumber">ID Number:</label>
+      <input type="text" id="idNumber" required>
+
+      <label for="phone">Phone Number:</label>
+      <input type="text" id="phone" required>
+
+      <label for="block">Block Name:</label>
+      <input type="text" id="block" required>
+
+      <label for="room">Room Number:</label>
+      <input type="text" id="room" required>
+
+      <label for="movedIn">Date Moved In:</label>
+      <input type="date" id="movedIn" required>
+
+      <label for="deposit">Deposit Amount:</label>
+      <input type="number" id="deposit" required>
+
+      <label for="rent">Monthly Rent:</label>
+      <input type="number" id="rent" required>
+
+      <button type="submit">Add Tenant</button>
+    </form>
+
+    <h3 style="margin-top: 2rem;">Registered Tenants</h3>
+    <ul id="tenant-list" class="tenant-list"></ul>
+
+    <button onclick="location.href='index.html'">Home</button>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 | A Craft of Kefini Creations</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

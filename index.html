@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RoomTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <script>
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  if (!isLoggedIn || isLoggedIn !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
+  <nav class="navbar">
+    <h1>RoomTrack</h1>
+     <div class="navbar-buttons">
+    <button onclick="location.href='register.html'">Add Tenant</button>
+    <button onclick="location.href='report.html'">Monthly Report</button>
+    <!-- <button onclick="logout()">Logout</button> -->
+     <button id="logout-btn">Logout</button>
+  </div>
+  </nav>
+
+  <main class="landing">
+    <!-- <h2>Welcome back, <span id="landlord-name">Landlord</span>!</h2>
+<p id="current-date"></p> -->
+
+    <h1>RoomTrack!</h1>
+    <!-- <button onclick="location.href='register.html'">Add Tenant</button>
+    <button onclick="location.href='report.html'">Monthly Report</button>
+    <button onclick="logout()">Logout</button> -->
+<main class="home-content">
+  <h2>Welcome <span id="landlord-name">😊</span>!</h2>
+  <p id="current-date"></p>
+
+  <!-- 🔹 Dashboard Cards -->
+  <div class="dashboard-cards">
+    <div class="card">Total Tenants: <span id="tenant-count">0</span></div>
+    <div class="card">Unpaid Rent: <span id="unpaid-count">0</span></div>
+    <div class="card">Blocks: <span id="block-count">0</span></div>
+  </div>
+
+  <!-- 🔔 Notification -->
+  <div class="notification" id="notification-area" style="display: none;">
+    ⚠️ <span id="unpaid-count-notice"></span> tenants haven’t paid rent this month. Please check the Monthly Report.
+  </div>
+
+  <!-- 🧾 Recent Tenants -->
+  <div class="recent-activity">
+    <h3>Recently Added Tenants</h3>
+    <ul id="recent-tenants"></ul>
+  </div>
+</main>
+
+
+  </main>
+
+  <footer class="footer">
+  <p>&copy; 2025 | A Craft of Kefini Creations</p>
+</footer>
+<!-- <script>
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  if (!isLoggedIn || isLoggedIn !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script> -->
+<script src="script.js"></script>
+
+
+</body>
+</html>
