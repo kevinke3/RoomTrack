@@ -459,10 +459,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById("tenant-count").textContent = tenants.length;
 
-  const unpaid = tenants.filter(t => {
-    const payments = t.payments || {};
-    return Object.values(payments).includes("Unpaid");
-  });
+  // const unpaid = tenants.filter(t => {
+  //   const payments = t.payments || {};
+  //   return Object.values(payments).includes("Unpaid");
+  // });
+  const currentMonth = new Date().toLocaleString('default', { month: 'short' }); // e.g. 'Jun'
+const unpaid = tenants.filter(t => {
+  const payments = t.payments || {};
+  return payments[currentMonth] !== "Paid";
+}); 
   document.getElementById("unpaid-count").textContent = unpaid.length;
 
   document.getElementById("block-count").textContent = [...new Set(tenants.map(t => t.block))].length;
