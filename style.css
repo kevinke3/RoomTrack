@@ -323,7 +323,7 @@ button {
 /* Notification */
 .notification {
   background-color: #fff3cd;
-  color: #856404;
+  color: #ff0000;
   padding: 0.8rem;
   border: 1px solid #ffeeba;
   border-radius: 8px;
@@ -347,4 +347,167 @@ button {
 .recent-activity li {
   padding: 0.4rem;
   border-bottom: 1px solid #ddd;
+}
+
+#year-select {
+  margin: 1rem auto;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #007BFF;
+  color: #007BFF;
+  background-color: #f0f8ff;
+}
+.forgot-link {
+  margin-top: 0.5rem;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.forgot-link a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+.forgot-link a:hover {
+  text-decoration: underline;
+}
+
+hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+/* === Carousel === */
+.carousel-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.card {
+  display: none;
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  animation: fade 0.5s ease-in-out;
+}
+
+.card img {
+  max-width: 100%;
+  margin-top: 1rem;
+  border-radius: 8px;
+}
+
+.card.active {
+  display: block;
+}
+
+.carousel-controls {
+  margin-top: 1rem;
+}
+
+.carousel-controls button {
+  background: #007bff;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  margin: 0 10px;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+@keyframes fade {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+/* Monthly Report Specific */
+
+#report-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 15px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+}
+
+#report-table th,
+#report-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#report-table th {
+  background-color: #007BFF;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+#report-table td.paid {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+#report-table td.unpaid {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+#report-table input[type="checkbox"] {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* Year select dropdown */
+#year-select {
+  padding: 6px 12px;
+  border: 1px solid #007BFF;
+  border-radius: 5px;
+  font-size: 14px;
+  background-color: white;
+  color: #007BFF;
+}
+
+/* Export button */
+button[onclick*="exportCSV"] {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button[onclick*="exportCSV"]:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Table */
+@media screen and (max-width: 768px) {
+  #report-table table {
+    font-size: 13px;
+  }
+
+  #year-select,
+  button[onclick*="exportCSV"] {
+    width: 100%;
+    margin-top: 10px;
+  }
 }

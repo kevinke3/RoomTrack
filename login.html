@@ -1,50 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007BFF">
+<link rel="icon" href="icons/icon-192.png">
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RoomTrack</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>RoomTrack Login</title>
+  <link rel="stylesheet" href="login-style.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <h1>RoomTrack</h1>
-  </nav>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="profile-pic"></div>
 
-  <main class="form-container">
-    <h2>Login</h2>
-    <form id="login-form">
-      <label for="username">Username:</label>
-      <input type="text" id="username" required />
+      <div class="tab-header">
+        <button class="tab active" id="login-tab">Login</button>
+        <button class="tab" id="signup-tab">Sign Up</button>
+      </div>
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" required />
+      <form id="login-form" class="form active-form">
+        <input type="text" id="username" placeholder="Email or Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit" class="submit-btn">Submit</button>
+        <a href="#" class="forgot">FORGOT YOUR PASSWORD?</a>
+      </form>
 
-      <button type="submit">Login</button>
-    </form>
-
-    <p><a href="#" onclick="forgotPassword()">Forgot Password?</a></p>
-    <p><a href="#" onclick="showRegister()">Register as New Landlord</a></p>
-    <p><a href="index.html">Home</a></p>
-  </main>
-  <script>
-    document.getElementById('login-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  // Example: Hardcoded check — replace with real logic if needed
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-
-  if (username === 'admin' && password === 'admin123') {
-    localStorage.setItem('isLoggedIn', 'true');  // ✅ Flag as logged in
-    window.location.href = 'index.html';         // ✅ Redirect to homepage
-  } else {
-    alert('Invalid credentials');
-  }
-});
-
-  </script>
+      <form id="register-form" class="form">
+        <input type="text" id="new-username" placeholder="New Username" required />
+        <input type="password" id="new-password" placeholder="New Password" required />
+        <button type="submit" class="submit-btn">Register</button>
+      </form>
+    </div>
+  </div>
 
   <script src="script.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("✅ Service Worker registered"))
+      .catch(err => console.error("❌ Service Worker registration failed:", err));
+  }
+</script>
+
 </body>
 </html>

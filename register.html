@@ -1,68 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register Tenant - RoomTrack</title>
-  <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007BFF">
+<link rel="icon" href="icons/icon-192.png">
 
-  <script>
-    // ✅ Redirect if not logged in
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-      window.location.href = 'login.html';
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register Tenant - RoomTrack</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f6fc;
     }
-  </script>
+
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #007BFF;
+    }
+
+    form label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+
+    form input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    form button {
+      background-color: #007BFF;
+      color: white;
+      padding: 12px;
+      width: 100%;
+      margin-top: 2rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #0056b3;
+    }
+
+    h3 {
+      margin-top: 3rem;
+      text-align: center;
+      color: #333;
+    }
+
+    .tenant-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 1rem;
+    }
+
+    .tenant-list li {
+      background: #f7faff;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #d4e1f4;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tenant-list button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .tenant-list button:hover {
+      background: #b52a38;
+    }
+
+    .home-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-top: 2rem;
+      text-decoration: none;
+      background: #007BFF;
+      color: white;
+      padding: 12px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .form-container {
+        margin: 1rem;
+        padding: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
+
   <nav class="navbar">
-    <h1>RoomTrack - Register Tenant</h1>
-    <div class="navbar-buttons">
-      <button onclick="location.href='index.html'">Home</button>
-      <button id="logout-btn">Logout</button>
+    <h1>RoomTrack</h1>
+     <div>
+      <button onclick="location.href='index.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px; margin-right: 8px;">🏠 Home</button>
+      <button onclick="location.href='report.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px;">📅 Monthly Report</button>
     </div>
   </nav>
 
   <main class="form-container">
     <h2>Add New Tenant</h2>
     <form id="tenant-form">
-      <label for="name">Full Name:</label>
+      <label for="name">Full Name</label>
       <input type="text" id="name" required>
 
-      <label for="idNumber">ID Number:</label>
+      <label for="idNumber">ID Number</label>
       <input type="text" id="idNumber" required>
 
-      <label for="phone">Phone Number:</label>
+      <label for="phone">Phone Number</label>
       <input type="text" id="phone" required>
 
-      <label for="block">Block Name:</label>
+      <label for="block">Block Name</label>
       <input type="text" id="block" required>
 
-      <label for="room">Room Number:</label>
+      <label for="room">Room Number</label>
       <input type="text" id="room" required>
 
-      <label for="movedIn">Date Moved In:</label>
+      <label for="movedIn">Date Moved In</label>
       <input type="date" id="movedIn" required>
 
-      <label for="deposit">Deposit Amount:</label>
+      <label for="deposit">Deposit Amount</label>
       <input type="number" id="deposit" required>
 
-      <label for="rent">Monthly Rent:</label>
+      <label for="rent">Monthly Rent</label>
       <input type="number" id="rent" required>
 
       <button type="submit">Add Tenant</button>
     </form>
 
-    <h3 style="margin-top: 2rem;">Registered Tenants</h3>
+    <h3>Registered Tenants</h3>
     <ul id="tenant-list" class="tenant-list"></ul>
 
-    <button onclick="location.href='index.html'">Home</button>
+    <a href="index.html" class="home-btn">🏠Home</a>
   </main>
 
-  <footer class="footer">
-    <p>&copy; 2025 | A Craft of Kefini Creations</p>
-  </footer>
-
   <script src="script.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("✅ Service Worker registered"))
+      .catch(err => console.error("❌ Service Worker registration failed:", err));
+  }
+</script>
+
 </body>
 </html>

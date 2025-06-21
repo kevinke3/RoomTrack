@@ -1,39 +1,14 @@
-// document.addEventListener('DOMContentLoaded', () => {
-//   const form = document.getElementById('tenant-form');
-//   if (form) {
-//     form.addEventListener('submit', function (e) {
-//       e.preventDefault();
+// ========== Constants ==========
+const STORAGE_KEY = "allTenants";
+const DEFAULT_USER = "default";
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-//       const tenant = {
-//         name: document.getElementById('name').value,
-//         idNumber: document.getElementById('idNumber').value,
-//         phone: document.getElementById('phone').value,
-//         block: document.getElementById('block').value,
-//         room: document.getElementById('room').value,
-//         movedIn: document.getElementById('movedIn').value,
-//         deposit: parseFloat(document.getElementById('deposit').value),
-//         rent: parseFloat(document.getElementById('rent').value),
-//         payments: {
-//           Jan: "Unpaid", Feb: "Unpaid", Mar: "Unpaid",
-//           Apr: "Unpaid", May: "Unpaid", Jun: "Unpaid",
-//           Jul: "Unpaid", Aug: "Unpaid", Sep: "Unpaid",
-//           Oct: "Unpaid", Nov: "Unpaid", Dec: "Unpaid"
-//         }
-//       };
-
-//       let tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-//       tenants.push(tenant);
-//       localStorage.setItem('tenants', JSON.stringify(tenants));
-
-//       alert("Tenant registered successfully!");
-//       form.reset();
-//     });
-//   }
-// });
+// ========== Register Tenant ==========
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('tenant-form');
-  if (form) {
-    form.addEventListener('submit', function (e) {
+  const tenantForm = document.getElementById('tenant-form');
+  if (tenantForm) {
+    tenantForm.addEventListener('submit', function (e) {
       e.preventDefault();
 
       const tenant = {
@@ -45,439 +20,241 @@ document.addEventListener('DOMContentLoaded', () => {
         movedIn: document.getElementById('movedIn').value,
         deposit: parseFloat(document.getElementById('deposit').value),
         rent: parseFloat(document.getElementById('rent').value),
-        payments: {
-          Jan: "Unpaid", Feb: "Unpaid", Mar: "Unpaid",
-          Apr: "Unpaid", May: "Unpaid", Jun: "Unpaid",
-          Jul: "Unpaid", Aug: "Unpaid", Sep: "Unpaid",
-          Oct: "Unpaid", Nov: "Unpaid", Dec: "Unpaid"
+        paymentsByYear: {
+          [new Date().getFullYear()]: Object.fromEntries(
+            MONTHS.map(m => [m, "Unpaid"])
+          )
         }
       };
 
-      let tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-      tenants.push(tenant);
-      localStorage.setItem('tenants', JSON.stringify(tenants));
+      const allTenants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      if (!allTenants[DEFAULT_USER]) allTenants[DEFAULT_USER] = [];
+
+      allTenants[DEFAULT_USER].push(tenant);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allTenants));
 
       alert("Tenant registered successfully!");
-      form.reset();
-      displayTenants(); // ✅ refresh list
+      tenantForm.reset();
+      displayTenants();
+      loadReportTable();
     });
   }
 
-  displayTenants(); // ✅ load list on page load
-});
-
-// Basic login system using localStorage
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-
-      const savedUser = localStorage.getItem('roomtrackUser') || 'admin';
-      const savedPass = localStorage.getItem('roomtrackPass') || 'admin123';
-
-      if (user === savedUser && pass === savedPass) {
-        alert("Login successful!");
-        window.location.href = 'index.html';
-      } else {
-        alert("Wrong credentials!");
-      }
-    });
+  displayTenants();
+  if (document.getElementById("report-table")) {
+    loadReportTable();
+  }
+  if (document.getElementById("year-select")) {
+    document.getElementById("year-select").addEventListener("change", loadReportTable);
   }
 });
 
-// Forgot password handler
-function forgotPassword() {
-  const newPass = prompt("Enter new password:");
-  if (newPass) {
-    localStorage.setItem('roomtrackPass', newPass);
-    alert("Password updated. Use it next time.");
-  }
-}
-// Register function
-function showRegister() {
-  const newUser = prompt("Enter new username:");
-  const newPass = prompt("Enter new password:");
-  if (newUser && newPass) {
-    localStorage.setItem('roomtrackUser', newUser);
-    localStorage.setItem('roomtrackPass', newPass);
-    alert("New landlord account registered!");
-  }
-}
-// Logout function
-// function logout() {
-//   alert("Logged out successfully!");
-//   window.location.href = "login.html";
-// 
-// .addEventListener('DOMContentLoaded', () => {
-//   const logoutBtn = document.getElementById('logout-btn');
-//   if (logoutBtn) {
-//     logoutBtn.addEventListener('click', () => {
-//       localStorage.removeItem('isLoggedIn'); // ✅ Clear session
-//       window.location.href = 'index.html';   // ✅ Redirect to login
-//     });
-//   }document
-// });
-
-
-// Delete Tenant
+// ========== Display Tenant List ==========
 function displayTenants() {
   const list = document.getElementById('tenant-list');
   if (!list) return;
 
-  const tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-  list.innerHTML = '';
+  const allTenants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  const tenants = allTenants[DEFAULT_USER] || [];
 
+  list.innerHTML = '';
   tenants.forEach((t, index) => {
     const li = document.createElement('li');
-    li.textContent = `${t.name} (Room ${t.room}) `;
+    li.textContent = `${t.name} (Room ${t.room}, Phone: ${t.phone})`;
+
     const btn = document.createElement('button');
     btn.textContent = 'Delete';
     btn.onclick = () => {
       if (confirm("Delete this tenant?")) {
         tenants.splice(index, 1);
-        localStorage.setItem('tenants', JSON.stringify(tenants));
+
+        if (tenants.length === 0) {
+          delete allTenants[DEFAULT_USER];
+        } else {
+          allTenants[DEFAULT_USER] = tenants;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allTenants));
         displayTenants();
+        loadReportTable();
       }
     };
+
     li.appendChild(btn);
     list.appendChild(li);
   });
 }
 
-displayTenants();
-//Export to CSV Function
-// function exportCSV() {
-//   const tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-//   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-//                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// ========== Load Monthly Report ==========
+function loadReportTable() {
+  const reportDiv = document.getElementById("report-table");
+  if (!reportDiv) return;
 
-//   let csv = "Month";
-//   tenants.forEach(t => csv += `,${t.name}`);
-//   csv += "\n";
+  const allTenants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  const tenants = allTenants[DEFAULT_USER] || [];
 
-//   months.forEach(month => {
-//     csv += month;
-//     tenants.forEach(t => {
-//       csv += `,${t.payments[month]}`;
-//     });
-//     csv += "\n";
-//   });
+  const yearSelect = document.getElementById("year-select");
+  const currentYear = new Date().getFullYear();
+  const selectedYear = yearSelect ? parseInt(yearSelect.value) || currentYear : currentYear;
 
-//   const blob = new Blob([csv], { type: 'text/csv' });
-//   const link = document.createElement('a');
-//   link.href = URL.createObjectURL(blob);
-//   link.download = 'RoomTrack_Monthly_Report.csv';
-//   link.click();
-// }
-function exportCSV() {
-  const tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // Populate year options if empty
+  if (yearSelect && yearSelect.options.length === 0) {
+    const years = new Set([currentYear]);
+    tenants.forEach(t => {
+      if (t.paymentsByYear) {
+        Object.keys(t.paymentsByYear).forEach(y => years.add(parseInt(y)));
+      }
+    });
+    [...years].sort((a, b) => b - a).forEach(y => {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      if (y === selectedYear) opt.selected = true;
+      yearSelect.appendChild(opt);
+    });
+  }
 
-  let csv = "Tenant Name,Block,Room," + months.join(",") + "\n";
+  // Ensure all months for selected year exist
+  tenants.forEach(t => {
+    if (!t.paymentsByYear) t.paymentsByYear = {};
+    if (!t.paymentsByYear[selectedYear]) {
+      t.paymentsByYear[selectedYear] = {};
+      MONTHS.forEach(m => t.paymentsByYear[selectedYear][m] = "Unpaid");
+    }
+  });
+
+  // Build table
+  let html = "<table><tr><th>Tenant</th><th>Block</th><th>Room</th>";
+  MONTHS.forEach(m => html += `<th>${m}</th>`);
+  html += "</tr>";
 
   tenants.forEach(t => {
+    html += `<tr><td>${t.name}</td><td>${t.block}</td><td>${t.room}</td>`;
+    MONTHS.forEach(month => {
+      const paid = t.paymentsByYear[selectedYear][month] === "Paid";
+      html += `<td>
+        <input type="checkbox"
+               data-id="${t.idNumber}"
+               data-month="${month}"
+               data-year="${selectedYear}"
+               ${paid ? 'checked' : ''}>
+      </td>`;
+    });
+    html += "</tr>";
+  });
+
+  html += "</table>";
+  reportDiv.innerHTML = html;
+
+  // Attach checkbox listeners
+  document.querySelectorAll('#report-table input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function () {
+      const id = this.dataset.id;
+      const month = this.dataset.month;
+      const year = this.dataset.year;
+      const isChecked = this.checked;
+
+      const allTenants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      const tenants = allTenants[DEFAULT_USER] || [];
+
+      const tenant = tenants.find(t => t.idNumber === id);
+      if (tenant) {
+        if (!tenant.paymentsByYear[year]) tenant.paymentsByYear[year] = {};
+        tenant.paymentsByYear[year][month] = isChecked ? "Paid" : "Unpaid";
+        allTenants[DEFAULT_USER] = tenants;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allTenants));
+      }
+    });
+  });
+}
+
+// ========== Export CSV ==========
+function exportCSV() {
+  const allTenants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  const tenants = allTenants[DEFAULT_USER] || [];
+
+  const yearSelect = document.getElementById("year-select");
+  const selectedYear = yearSelect ? parseInt(yearSelect.value) || new Date().getFullYear() : new Date().getFullYear();
+
+  if (tenants.length === 0) {
+    alert("No tenants to export.");
+    return;
+  }
+
+  let csv = "Tenant Name,Block,Room," + MONTHS.join(",") + "\n";
+
+  tenants.forEach(t => {
+    if (!t.paymentsByYear[selectedYear]) {
+      t.paymentsByYear[selectedYear] = {};
+      MONTHS.forEach(month => t.paymentsByYear[selectedYear][month] = "Unpaid");
+    }
+
     let row = `${t.name},${t.block},${t.room}`;
-    months.forEach(m => {
-      row += `,${t.payments[m] || 'Unpaid'}`;
+    MONTHS.forEach(month => {
+      row += `,${t.paymentsByYear[selectedYear][month] || "Unpaid"}`;
     });
     csv += row + "\n";
   });
 
+  allTenants[DEFAULT_USER] = tenants;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allTenants));
+
   const blob = new Blob([csv], { type: 'text/csv' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'RoomTrack_Report.csv';
+  link.download = `RoomTrack_Report_${selectedYear}.csv`;
   link.click();
 }
+// Count tenants with at least one unpaid rent up to current month
+function renderReportTable() {
+  const user = "default"; // Always use 'default' key
+  const allTenants = JSON.parse(localStorage.getItem("allTenants")) || {};
+  const tenants = allTenants[user] || [];
 
-//Login
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', function (e) {
-      e.preventDefault();
+  const year = document.getElementById("year-select").value;
+  let html = "<table><tr><th>Tenant</th><th>Block</th><th>Room</th>";
+  months.forEach(month => html += `<th>${month}</th>`);
+  html += "</tr>";
 
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-
-      const savedUser = localStorage.getItem('roomtrackUser') || 'admin';
-      const savedPass = localStorage.getItem('roomtrackPass') || 'admin123';
-
-      if (user === savedUser && pass === savedPass) {
-        localStorage.setItem('isLoggedIn', 'true'); // ✅ This must be set
-        alert("Login successful!");
-        window.location.href = 'index.html';
-      } else {
-        alert("Wrong credentials!");
-      }
-    });
-  }
-});
-
-// function loadReportTable() {
-//   const reportDiv = document.getElementById('report-table');
-//   if (!reportDiv) return;
-
-//   const tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-//   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-//                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-//   let tableHTML = "<table><tr><th>Tenant</th>";
-//   months.forEach(month => {
-//     tableHTML += `<th>${month}</th>`;
-//   });
-//   tableHTML += "</tr>";
-
-//   tenants.forEach((tenant, tIndex) => {
-//     tableHTML += `<tr><td>${tenant.name}</td>`;
-//     months.forEach(month => {
-//       const isPaid = tenant.payments[month] === "Paid";
-//       tableHTML += `
-//         <td class="${isPaid ? 'paid' : 'unpaid'}">
-//           <input type="checkbox" data-tenant="${tIndex}" data-month="${month}" ${isPaid ? 'checked' : ''} />
-//         </td>
-//       `;
-//     });
-//     tableHTML += "</tr>";
-//   });
-
-//   tableHTML += "</table>";
-//   reportDiv.innerHTML = tableHTML;
-
-//   // Add event listeners to checkboxes
-//   document.querySelectorAll('#report-table input[type="checkbox"]').forEach(checkbox => {
-//     checkbox.addEventListener('change', function () {
-//       const tenantIndex = this.dataset.tenant;
-//       const month = this.dataset.month;
-//       const isChecked = this.checked;
-
-//       let tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-//       tenants[tenantIndex].payments[month] = isChecked ? "Paid" : "Unpaid";
-//       localStorage.setItem('tenants', JSON.stringify(tenants));
-
-//       // Re-render table to update colors
-//       loadReportTable();
-//     });
-//   });
-// }
-
-function loadReportTable() {
-  const reportDiv = document.getElementById('report-table');
-  if (!reportDiv) return;
-
-  const tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  let tableHTML = "<table><tr><th>Tenant</th>";
-  months.forEach(month => {
-    tableHTML += `<th>${month}</th>`;
-  });
-  tableHTML += "</tr>";
-
-  tenants.forEach((tenant, tIndex) => {
-    tableHTML += `<tr><td>${tenant.name}</td>`;
+  tenants.forEach(t => {
+    html += `<tr><td>${t.name}</td><td>${t.block}</td><td>${t.room}</td>`;
     months.forEach(month => {
-      const isPaid = tenant.payments[month] === "Paid";
-      tableHTML += `
-        <td class="${isPaid ? 'paid' : 'unpaid'}">
-          <input type="checkbox" data-tenant="${tIndex}" data-month="${month}" ${isPaid ? 'checked' : ''} />
-        </td>
-      `;
+      const status = (t.paymentsByYear && t.paymentsByYear[year] && t.paymentsByYear[year][month]) || "Unpaid";
+      const checked = status === "Paid" ? "checked" : "";
+      html += `<td>
+        <input type="checkbox" class="payment-checkbox" 
+               data-id="${t.idNumber}" 
+               data-month="${month}" ${checked}>
+      </td>`;
     });
-    tableHTML += "</tr>";
+    html += "</tr>";
   });
 
-  tableHTML += "</table>";
-  reportDiv.innerHTML = tableHTML;
+  html += "</table>";
+  document.getElementById("report-table").innerHTML = html;
+  console.log("Report rendered, checking unpaid tenants...");
 
-  document.querySelectorAll('#report-table input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function () {
-      const tenantIndex = this.dataset.tenant;
-      const month = this.dataset.month;
-      const isChecked = this.checked;
+  attachCheckboxListeners();
 
-      let tenants = JSON.parse(localStorage.getItem('tenants')) || [];
-      tenants[tenantIndex].payments[month] = isChecked ? "Paid" : "Unpaid";
-      localStorage.setItem('tenants', JSON.stringify(tenants));
+  // 🔴 Add unpaid tenant notification
+  const now = new Date();
+  const currentMonthIndex = now.getMonth(); // 0 = Jan, 11 = Dec
+  let unpaidCount = 0;
 
-      loadReportTable(); // refresh the table
-    });
+  tenants.forEach(t => {
+    const payments = t.paymentsByYear?.[year] || {};
+    const hasUnpaid = months.slice(0, currentMonthIndex + 1).some(month => payments[month] !== "Paid");
+    if (hasUnpaid) unpaidCount++;
   });
+
+  const unpaidNote = document.getElementById("unpaid-notification");
+console.log("Unpaid count:", unpaidCount, unpaidNote);
+
+  if (unpaidNote) {
+    if (unpaidCount > 0) {
+      unpaidNote.textContent = `${unpaidCount} tenant${unpaidCount > 1 ? 's' : ''} haven't paid rent`;
+    } else {
+      unpaidNote.textContent = "";
+    }
+  }
 }
-
-loadReportTable(); // call this when report page loads
-
-//Logout
-document.addEventListener("DOMContentLoaded", () => {
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("isLoggedIn");
-      window.location.href = "login.html";
-    });
-  }
-
-  // Redirect to login if not logged in
-  const publicPages = ["login.html", "register_landlord.html"];
-  const currentPage = window.location.pathname.split("/").pop();
-
-  if (!localStorage.getItem("isLoggedIn") && !publicPages.includes(currentPage)) {
-    window.location.href = "login.html";
-  }
-});
-// // Landlords name
-// document.getElementById("landlord-name").innerText =
-//   localStorage.getItem("landlordName") || "Landlord";
-// document.getElementById("current-date").innerText =
-//   "Today is: " + new Date().toDateString();
-// // Cards
-// function loadDashboardStats() {
-//   const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-//   const unpaid = tenants.filter(t =>
-//     Object.values(t.payments || {}).includes("Unpaid")
-//   );
-//   const blocks = [...new Set(tenants.map(t => t.block))];
-
-//   document.getElementById("tenant-count").innerText = tenants.length;
-//   document.getElementById("unpaid-count").innerText = unpaid.length;
-//   document.getElementById("block-count").innerText = blocks.length;
-// }
-// loadDashboardStats();
-
-// //Recently added
-// function loadRecentTenants() {
-//   const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-//   const list = document.getElementById("recent-tenants");
-//   list.innerHTML = "";
-//   tenants.slice(-3).reverse().forEach(t => {
-//     const li = document.createElement("li");
-//     li.textContent = `${t.name} (Block ${t.block})`;
-//     list.appendChild(li);
-//   });
-// }
-// loadRecentTenants();
-
-// document.addEventListener('DOMContentLoaded', () => {
-//   // Greeting
-//   document.getElementById("landlord-name").textContent = localStorage.getItem("landlordName") || "Landlord";
-//   document.getElementById("current-date").textContent = "Today is " + new Date().toDateString();
-
-//   // Load Tenants
-//   const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-
-//   // Cards
-//   document.getElementById("tenant-count").textContent = tenants.length;
-
-//   const unpaid = tenants.filter(t => {
-//     const payments = t.payments || {};
-//     return Object.values(payments).includes("Unpaid");
-//   });
-
-//   document.getElementById("unpaid-count").textContent = unpaid.length;
-//   document.getElementById("block-count").textContent = [...new Set(tenants.map(t => t.block))].length;
-
-//   // Notification
-//   const notice = document.getElementById("notification-area");
-//   if (unpaid.length > 0) {
-//     document.getElementById("unpaid-count-notice").textContent = unpaid.length;
-//     notice.style.display = "block";
-//   }
-
-//   // Recent Tenants (last 3)
-//   const recentList = document.getElementById("recent-tenants");
-//   recentList.innerHTML = "";
-//   tenants.slice(-3).reverse().forEach(t => {
-//     const li = document.createElement("li");
-//     li.textContent = `${t.name} — Block ${t.block}`;
-//     recentList.appendChild(li);
-//   });
-// });
-// document.addEventListener('DOMContentLoaded', () => {
-//   // Greeting
-//   document.getElementById("landlord-name").textContent = localStorage.getItem("landlordName") || "Landlord";
-//   document.getElementById("current-date").textContent = "Today is " + new Date().toDateString();
-
-//   // Load Tenants
-//   const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-
-//   // Ensure all tenants have payments key
-//   tenants.forEach(t => {
-//     if (!t.payments) {
-//       t.payments = {
-//         Jan: "Unpaid", Feb: "Unpaid", Mar: "Unpaid",
-//         Apr: "Unpaid", May: "Unpaid", Jun: "Unpaid",
-//         Jul: "Unpaid", Aug: "Unpaid", Sep: "Unpaid",
-//         Oct: "Unpaid", Nov: "Unpaid", Dec: "Unpaid"
-//       };
-//     }
-//   });
-//   localStorage.setItem("tenants", JSON.stringify(tenants));
-
-//   // Cards
-//   document.getElementById("tenant-count").textContent = tenants.length;
-
-//   const unpaid = tenants.filter(t => {
-//     const payments = t.payments || {};
-//     return Object.values(payments).includes("Unpaid");
-//   });
-
-//   document.getElementById("unpaid-count").textContent = unpaid.length;
-//   document.getElementById("block-count").textContent = [...new Set(tenants.map(t => t.block || "Unknown"))].length;
-
-//   // Notification
-//   const notice = document.getElementById("notification-area");
-//   if (notice && unpaid.length > 0) {
-//     document.getElementById("unpaid-count-notice").textContent = unpaid.length;
-//     notice.style.display = "block";
-//   }
-
-//   // Recent Tenants
-//   const recentList = document.getElementById("recent-tenants");
-//   if (recentList) {
-//     recentList.innerHTML = "";
-//     if (tenants.length === 0) {
-//       recentList.innerHTML = "<li>No tenants added yet.</li>";
-//     } else {
-//       tenants.slice(-3).reverse().forEach(t => {
-//         const li = document.createElement("li");
-//         li.textContent = `${t.name || "Unknown"} — Block ${t.block || "?"}`;
-//         recentList.appendChild(li);
-//       });
-//     }
-//   }
-// });
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("landlord-name").textContent = localStorage.getItem("landlordName") || "😊";
-  document.getElementById("current-date").textContent = "Its " + new Date().toDateString();
-
-  const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-
-  document.getElementById("tenant-count").textContent = tenants.length;
-
-  const unpaid = tenants.filter(t => {
-    const payments = t.payments || {};
-    return Object.values(payments).includes("Unpaid");
-  });
-  document.getElementById("unpaid-count").textContent = unpaid.length;
-
-  document.getElementById("block-count").textContent = [...new Set(tenants.map(t => t.block))].length;
-
-  const notice = document.getElementById("notification-area");
-  if (unpaid.length > 0) {
-    document.getElementById("unpaid-count-notice").textContent = unpaid.length;
-    notice.style.display = "block";
-  }
-
-  const recentList = document.getElementById("recent-tenants");
-  recentList.innerHTML = "";
-  tenants.slice(-3).reverse().forEach(t => {
-    const li = document.createElement("li");
-    li.textContent = `${t.name} — Block ${t.block}`;
-    recentList.appendChild(li);
-  });
-});

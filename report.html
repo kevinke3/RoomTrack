@@ -1,26 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007BFF">
+<link rel="icon" href="icons/icon-192.png">
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Monthly Report - RoomTrack</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f6fc;
+    }
+
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin: 2rem auto;
+    }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .report-header h2 {
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    #year-select {
+      padding: 5px 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+    }
+
+    .report-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .report-table-wrapper table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .report-table-wrapper th,
+    .report-table-wrapper td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #dee2e6;
+    }
+
+    .report-table-wrapper th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .export-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+    }
+
+    .export-btn:hover {
+      background: #0056b3;
+    }
+
+    @media (max-width: 768px) {
+      .report-header {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
+
   <nav class="navbar">
-    <h1>Monthly Report</h1>
+    <h1>RoomTrack</h1>
+    <div>
+      <button onclick="location.href='index.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px; margin-right: 8px;">🏠 Home</button>
+      <button onclick="location.href='register.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px;">➕ Add Tenant</button>
+    </div>
   </nav>
 
-  <main class="report-container">
-    <h2>Rent Payment Status</h2>
-    <p>Mark checkboxes for months that have been paid.</p>
+  <div class="report-container">
+    <div class="report-header">
+      <h2>Rent Payment Report</h2>
+      <div>
+        <div id="unpaid-notification" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+        <label for="year-select"><strong>Select Year:</strong></label>
+        <select id="year-select"></select>
+      </div>
+    </div>
 
-    <div id="report-table"></div>
-    <br><button onclick="exportCSV()">Export</button>
+    <div class="report-table-wrapper">
+      <div id="report-table"></div>
+    </div>
 
-    <button onclick="location.href='index.html'">Home</button>
-  </main>
+    <button onclick="exportCSV()" class="export-btn">
+      <span>📤</span> Export CSV
+    </button>
+  </div>
 
-  <script src="script.js"></script>
+  <script>
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    function populateYears() {
+      const yearSelect = document.getElementById("year-select");
+      const currentYear = new Date().getFullYear();
+      for (let i = currentYear - 3; i <= currentYear + 1; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        if (i === currentYear) option.selected = true;
+        yearSelect.appendChild(option);
+      }
+    }
+
+    function renderReportTable() {
+      const user = "default"; // Always use 'default' key
+      const allTenants = JSON.parse(localStorage.getItem("allTenants")) || {};
+      const tenants = allTenants[user] || [];
+
+      const year = document.getElementById("year-select").value;
+      let html = "<table><tr><th>Tenant</th><th>Block</th><th>Room</th>";
+      months.forEach(month => html += `<th>${month}</th>`);
+      html += "</tr>";
+
+      tenants.forEach(t => {
+        html += `<tr><td>${t.name}</td><td>${t.block}</td><td>${t.room}</td>`;
+        months.forEach(month => {
+          const status = (t.paymentsByYear && t.paymentsByYear[year] && t.paymentsByYear[year][month]) || "Unpaid";
+          const checked = status === "Paid" ? "checked" : "";
+          html += `<td>
+            <input type="checkbox" class="payment-checkbox" 
+                   data-id="${t.idNumber}" 
+                   data-month="${month}" ${checked}>
+          </td>`;
+        });
+        html += "</tr>";
+      });
+
+      html += "</table>";
+      document.getElementById("report-table").innerHTML = html;
+      attachCheckboxListeners();
+    }
+
+    function attachCheckboxListeners() {
+      const user = "default";
+      document.querySelectorAll('.payment-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+          const tenantID = this.dataset.id;
+          const month = this.dataset.month;
+          const selectedYear = document.getElementById("year-select").value;
+
+          const allTenants = JSON.parse(localStorage.getItem("allTenants")) || {};
+          const tenants = allTenants[user] || [];
+
+          const tenant = tenants.find(t => t.idNumber === tenantID);
+          if (tenant) {
+            if (!tenant.paymentsByYear) tenant.paymentsByYear = {};
+            if (!tenant.paymentsByYear[selectedYear]) tenant.paymentsByYear[selectedYear] = {};
+            tenant.paymentsByYear[selectedYear][month] = this.checked ? "Paid" : "Unpaid";
+
+            allTenants[user] = tenants;
+            localStorage.setItem("allTenants", JSON.stringify(allTenants));
+          }
+        });
+      });
+    }
+
+    function exportCSV() {
+      const user = "default";
+      const allTenants = JSON.parse(localStorage.getItem("allTenants")) || {};
+      const tenants = allTenants[user] || [];
+
+      const year = document.getElementById("year-select").value;
+      let csv = "Tenant Name,Block,Room," + months.join(",") + "\n";
+
+      tenants.forEach(t => {
+        let row = `${t.name},${t.block},${t.room}`;
+        months.forEach(month => {
+          const payment = (t.paymentsByYear && t.paymentsByYear[year] && t.paymentsByYear[year][month]) || "Unpaid";
+          row += `,${payment}`;
+        });
+        csv += row + "\n";
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `RoomTrack_Report_${year}.csv`;
+      link.click();
+    }
+
+    document.getElementById("year-select").addEventListener("change", renderReportTable);
+
+    populateYears();
+    renderReportTable();
+  </script>
+<script src="script.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("✅ Service Worker registered"))
+      .catch(err => console.error("❌ Service Worker registration failed:", err));
+  }
+</script>
+
 </body>
 </html>

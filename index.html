@@ -1,73 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007BFF">
+<link rel="icon" href="icons/icon-192.png">
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RoomTrack</title>
+  <title>RoomTrack - Home</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f8ff;
+    }
+
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .carousel-container {
+      position: relative;
+      max-width: 100%;
+      margin: 2rem auto;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      background: white;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .slide {
+      display: none;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    .slide img {
+      max-width: 100%;
+      border-radius: 8px;
+      height: auto;
+      max-height: 350px;
+      object-fit: cover;
+      border: 1px solid #eee;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .slide p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      color: #333;
+    }
+
+    .dots {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .dot {
+      height: 12px;
+      width: 12px;
+      margin: 0 5px;
+      background-color: #bbb;
+      border-radius: 50%;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background-color: #007BFF;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #777;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .slide p {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <script>
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  if (!isLoggedIn || isLoggedIn !== 'true') {
-    window.location.href = 'login.html';
+
+  <nav class="navbar">
+  <h1>RoomTrack</h1>
+  <div>
+    <button onclick="location.href='index.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px; margin-right: 8px;">🏠 Home</button>
+    <button onclick="location.href='register.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px; margin-right: 8px;">🧍 Add Tenants</button>
+    <button onclick="location.href='report.html'" style="background: white; color: #007BFF; padding: 6px 12px; border-radius: 5px;">📅 Monthly Report</button>
+  </div>
+</nav>
+  <div class="carousel-container">
+    <div class="slide active">
+      <img src="assets/Replace1.jpg" alt="Slide 1">
+      <p>“A well-kept house reflects a well-kept life.”</p>
+    </div>
+    <div class="slide">
+      <img src="assets/Replace2.webp" alt="Slide 2">
+      <p>“Your tenants are your first customers.”</p>
+    </div>
+    <div class="slide">
+      <img src="assets/Replace3.jpg" alt="Slide 3">
+      <p>“Peace of mind starts with proper rent tracking.”</p>
+    </div>
+  </div>
+
+  <div class="dots">
+    <span class="dot active" onclick="showSlide(0)"></span>
+    <span class="dot" onclick="showSlide(1)"></span>
+    <span class="dot" onclick="showSlide(2)"></span>
+  </div>
+
+  <footer>
+    &copy; 2025 RoomTrack | A Craft by Kefini Creations
+  </footer>
+
+  <script>
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+        dots[i].classList.toggle('active', i === index);
+      });
+      slideIndex = index;
+    }
+
+    function autoSlide() {
+      slideIndex = (slideIndex + 1) % slides.length;
+      showSlide(slideIndex);
+    }
+
+    setInterval(autoSlide, 5000); // Change every 5 seconds
+  </script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("✅ Service Worker registered"))
+      .catch(err => console.error("❌ Service Worker registration failed:", err));
   }
 </script>
-  <nav class="navbar">
-    <h1>RoomTrack</h1>
-     <div class="navbar-buttons">
-    <button onclick="location.href='register.html'">Add Tenant</button>
-    <button onclick="location.href='report.html'">Monthly Report</button>
-    <!-- <button onclick="logout()">Logout</button> -->
-     <button id="logout-btn">Logout</button>
-  </div>
-  </nav>
-
-  <main class="landing">
-    <!-- <h2>Welcome back, <span id="landlord-name">Landlord</span>!</h2>
-<p id="current-date"></p> -->
-
-    <h1>RoomTrack!</h1>
-    <!-- <button onclick="location.href='register.html'">Add Tenant</button>
-    <button onclick="location.href='report.html'">Monthly Report</button>
-    <button onclick="logout()">Logout</button> -->
-<main class="home-content">
-  <h2>Welcome <span id="landlord-name">😊</span>!</h2>
-  <p id="current-date"></p>
-
-  <!-- 🔹 Dashboard Cards -->
-  <div class="dashboard-cards">
-    <div class="card">Total Tenants: <span id="tenant-count">0</span></div>
-    <div class="card">Unpaid Rent: <span id="unpaid-count">0</span></div>
-    <div class="card">Blocks: <span id="block-count">0</span></div>
-  </div>
-
-  <!-- 🔔 Notification -->
-  <div class="notification" id="notification-area" style="display: none;">
-    ⚠️ <span id="unpaid-count-notice"></span> tenants haven’t paid rent this month. Please check the Monthly Report.
-  </div>
-
-  <!-- 🧾 Recent Tenants -->
-  <div class="recent-activity">
-    <h3>Recently Added Tenants</h3>
-    <ul id="recent-tenants"></ul>
-  </div>
-</main>
-
-
-  </main>
-
-  <footer class="footer">
-  <p>&copy; 2025 | A Craft of Kefini Creations</p>
-</footer>
-<!-- <script>
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  if (!isLoggedIn || isLoggedIn !== 'true') {
-    window.location.href = 'login.html';
-  }
-</script> -->
-<script src="script.js"></script>
-
 
 </body>
 </html>
